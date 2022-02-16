@@ -1,0 +1,1 @@
+This is our team directory for CS 3110. Our final project is developing an internship application tracker.
