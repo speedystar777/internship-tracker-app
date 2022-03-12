@@ -1,6 +1,7 @@
 open Tracker
 open ANSITerminal
 open Commands
+open Record
 
 (* let malformed = "I don't understand your command. Please enter a\n\n
    valid command"
@@ -28,31 +29,49 @@ open Commands
    play (get_description adv st) adv st*)
 
 (** [main ()] prompts for the game to play, then starts it. *)
+let string_of_list =
+  let rec helper acc = function
+    | [] -> acc ^ "]"
+    | [ h ] -> helper (acc ^ h) []
+    | h :: t -> helper (acc ^ h ^ ", ") t
+in helper "["
 
-let field_list = [ "name"; "date"; "status" ]
+type id = | Name of string | Date of string | Status of string
 
-let rec build_entry id str acc =
-  match id with
-  | "name" ->
-      print_endline "Please enter the deadline of the internship";
-      let st = read_line () in
-      build_entry "date" st (str :: acc)
-  | "date" ->
-      print_endline
-        "Please enter the current status fo your application";
-      let st = read_line () in
-      build_entry "status" st (str :: acc)
-  | "status" -> str :: acc
-  | _ -> []
+let grab_id_phrase = function 
+| Name n -> n
+| Date d -> d
+| Status s -> s
+
+let process s = s |> String.split_on_char ' ' |> List.filter (fun x -> x <> "") |> List.map String.lowercase_ascii |> String.concat " "
+
+let valid_s s = s = "new" || s = "applied" || s = "interviewed" || s = "accepted" || s = "rejected"
+
+let valid_d d = true
+
+let date_error = "The date you have entered is invalid. The date must be in the form mm/dd/yy"
+let status_error = "Please enter a valid status from: new, applied, interviewed, accepted, rejected"
+
+let rec build_entry (id : id) acc valid error : string list = 
+  if not valid then (print_endline error);
+  let s = grab_id_phrase id in print_endline ("Please enter the " ^ s ^ " of the internship");
+match id with
+| Name n -> build_entry (Date "date") ((process (read_line ())) :: acc) true ""
+| Date d -> if valid_d d then build_entry (Status "status") ((process (read_line ())) :: acc) true "" else build_entry (Date "date") acc false date_error
+| Status s -> let s = (process (read_line ())) in if valid_s s then s :: acc else build_entry (Status "status") acc false status_error
+
+let process_lst_to_entry = function 
+| [s; d; n] -> create_entry n d s 
+| _ -> raise (Invalid_argument "invalid")
 
 let rec make_tracker msg =
   match parse msg with
-  | Add -> ()
-  | Delete s -> ()
-  | View -> ()
+  | Add -> build_entry (Name "name") [] true "" |> string_of_list |> print_endline;
+  | Delete s -> print_endline ""; ()
+  | View -> print_endline ""; ()
 
-let malformed =
-  "I don't understand your command. Please enter a valid command"
+(* let malformed =
+  "I don't understand your command. Please enter a valid command" *)
 
 let main () =
   ANSITerminal.print_string [ ANSITerminal.red ]

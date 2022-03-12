@@ -1,6 +1,14 @@
 type entry
 (** The abstract type of values representing an entry. *)
 
+type state = 
+| New
+| Applied 
+| Interviewed
+| Accepted 
+| Rejected
+(** The type of values representing the state of an entry *)
+
 type t = entry list
 (** The type of values representing a collection of entries without
     duplicates. *)
@@ -27,4 +35,8 @@ val add : entry -> t -> t
 
 val delete : entry -> t -> t
 (** [delete e t] is the entry list [t] with [e] removed. Raises:
+    NotFound if entry is not found in [t]. *)
+
+val change_status : entry -> entry list -> state -> entry list
+(** [change_status e t s] is the entry list [t] with the status of [e] changed to [s]. Raises:
     NotFound if entry is not found in [t]. *)
