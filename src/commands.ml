@@ -4,6 +4,7 @@ type command =
   | Add
   | Delete of command_phrase
   | View
+  | Quit
 
 exception Malformed
 
@@ -12,6 +13,7 @@ let parse str =
     | [ "add" ] -> Add
     | "delete" :: t -> Delete t
     | [ "view" ] -> View
+    | [ "quit" ] -> Quit
     | _ -> raise Malformed
   in
   get_command

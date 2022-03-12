@@ -13,6 +13,9 @@ type t = entry list
 (** The type of values representing a collection of entries without
     duplicates. *)
 
+val empty : t
+(** [empty] is the empty entry list *)
+
 val compare_entries : entry -> entry -> int
 (** [compare_entries e1 e2] is positive if [e1] is greater than [e2],
     negative if [e1] is less than [e2], and zero otherwise. *)
@@ -37,6 +40,13 @@ val delete : entry -> t -> t
 (** [delete e t] is the entry list [t] with [e] removed. Raises:
     NotFound if entry is not found in [t]. *)
 
-val change_status : entry -> entry list -> state -> entry list
+val change_status : entry -> t -> state -> entry list
 (** [change_status e t s] is the entry list [t] with the status of [e] changed to [s]. Raises:
     NotFound if entry is not found in [t]. *)
+
+val print_entry : entry -> string
+(** [change_status e t s] is the entry list [t] with the status of [e] changed to [s]. Raises:
+    NotFound if entry is not found in [t]. *)
+
+val print_t : t -> string list 
+

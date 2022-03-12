@@ -4,6 +4,7 @@ type command =
   | Add
   | Delete of command_phrase
   | View
+  | Quit
 
 exception Malformed
 

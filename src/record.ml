@@ -17,6 +17,8 @@ exception NotFound
 exception Duplicate
 exception InvalidArg
 
+let empty = []
+
 let create_entry name date status_string = { name; date; status = match status_string with
 | "new" -> New
 | "applied" -> Applied 
@@ -44,3 +46,7 @@ let change_status entry lst s =
   let new_lst = delete entry lst in
 add new_entry new_lst
 
+let print_entry e = "name: " ^ e.name ^ " | date: " ^ e.date ^ " | status: " ^ (match e.status with
+| New -> "new" | Applied -> "applied" | Interviewed -> "interviewed" | Accepted -> "accepted" | Rejected -> "rejected")
+
+let print_t = List.map print_entry
