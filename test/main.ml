@@ -32,7 +32,7 @@ let pp_list pp_elt lst =
   in
   "[" ^ pp_elts lst ^ "]"
 
-let test_entry = create_entry "test_entry" "00-00-0000" "appllied"
+let test_entry = create_entry "test_entry" "00-00-0000" "applied"
 let test_entry2 = create_entry "test_entry2" "00-00-0000" "applied"
 
 let add_test (name : string) e input expected_output : test =
@@ -59,12 +59,18 @@ let delete_test_illegal (name : string) e input (expected_output : exn)
   name >:: fun _ ->
   assert_raises expected_output (fun () -> delete e input)
 
-let command_test (name : string) (input : string) (expected_output : Commands.command) : test =
-  name >:: fun _ ->
-    assert_equal expected_output (Commands.parse input)
+let command_test
+    (name : string)
+    (input : string)
+    (expected_output : Commands.command) : test =
+  name >:: fun _ -> assert_equal expected_output (Commands.parse input)
 
-let command_test_illegal (name: string) (input : string) (expected_output : exn) : test = 
-  name >:: fun _ -> assert_raises expected_output (fun () -> Commands.parse input)
+let command_test_illegal
+    (name : string)
+    (input : string)
+    (expected_output : exn) : test =
+  name >:: fun _ ->
+  assert_raises expected_output (fun () -> Commands.parse input)
 
 let record_tests =
   [
@@ -77,25 +83,31 @@ let record_tests =
     add_test_illegal "adding a duplicate entry to an entry list"
       test_entry [ test_entry ] Duplicate;
     delete_test "removing an entry from a non-empty entry list"
-      test_entry [ test_entry ] [];
+      (name test_entry) [ test_entry ] [];
     delete_test_illegal "removing an entry from an empty entry list"
-      test_entry [] NotFound;
+      (name test_entry) [] NotFound;
     delete_test_illegal
       "removing an entry that is not a member of an entry list"
-      test_entry2 [ test_entry ] NotFound;
+      (name test_entry2) [ test_entry ] NotFound;
   ]
 
-let command_test = [
+let command_test =
+  [
     command_test "parsing add command" "add" Add;
-    command_test "parsing delete command" "delete internship name" (Delete ["internship"; "name"]);
+    command_test "parsing delete command" "delete internship name"
+      (Delete [ "internship"; "name" ]);
     command_test "parsing view command" "view" View;
     command_test "parsing command with spaces" "     add     " Add;
-    command_test_illegal "parsing an empty command" "" Commands.Malformed;
-    command_test_illegal "parsing a malformed delete command" "Delete" Commands.Malformed;
-    command_test_illegal "parsing a malformed add command" "Ad" Commands.Malformed
-]
+    command_test_illegal "parsing an empty command" ""
+      Commands.Malformed;
+    command_test_illegal "parsing a malformed delete command" "Delete"
+      Commands.Malformed;
+    command_test_illegal "parsing a malformed add command" "Ad"
+      Commands.Malformed;
+  ]
 
 let suite =
-  "test suite for Internship Tracker" >::: List.flatten [ record_tests; command_test ]
+  "test suite for Internship Tracker"
+  >::: List.flatten [ record_tests; command_test ]
 
 let _ = run_test_tt_main suite

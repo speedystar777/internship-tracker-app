@@ -5,6 +5,7 @@ type command =
   | Delete of command_phrase
   | View
   | Quit
+  | Update of command_phrase
 
 exception Malformed
 
