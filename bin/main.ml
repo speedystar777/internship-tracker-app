@@ -1,7 +1,8 @@
 open Tracker
 open ANSITerminal
 open Commands
-open Record
+open Entry
+open Entrylist
 
 let string_of_list =
   let rec helper acc = function
@@ -10,35 +11,12 @@ let string_of_list =
   in
   helper ""
 
-let string_of_list_assc =
-  let rec helper acc = function
-    | [] -> acc
-    | (x, y) :: t -> helper (acc ^ "[" ^ x ^ " " ^ y ^ "] \n") t
-  in
-  helper ""
-
-type id =
-  | Name of string
-  | Date of string
-  | Status of string
-
-let grab_id_phrase = function
-  | Name n -> n
-  | Date d -> d
-  | Status s -> s
-
 let process s =
   s
   |> String.split_on_char ' '
   |> List.filter (fun x -> x <> "")
   |> List.map String.lowercase_ascii
   |> String.concat " "
-
-let valid_s s =
-  s = "new" || s = "applied" || s = "interviewed" || s = "accepted"
-  || s = "rejected"
-
-let valid_d d = true
 
 let date_error =
   "The date you have entered is invalid. The date must be in the form \
@@ -50,7 +28,19 @@ let status_error =
 
 let dup_message = "\nWARNING: You cannot enter duplicate entry names."
 
-let rec build_entry (id : id) acc valid error : string list =
+let command_message =
+  "\n\nPlease enter the action you would like to complete."
+  ^ "\n\
+     The options include 'add', 'delete [name of internship]', 'view', \
+     'update [name of internship]', 'quit'.\n"
+
+let notfound_message =
+  "\nWARNING: The entry you are trying to query does not exist."
+
+let deleted_msg name = "The deletion of " ^ name ^ " was successful!"
+let cmd_string lst = String.concat " " lst
+
+let rec build_entry id acc valid error : string list =
   if not valid then print_endline error;
   let s = grab_id_phrase id in
   print_endline ("Please enter the " ^ s ^ " of the internship");
@@ -68,11 +58,29 @@ let rec build_entry (id : id) acc valid error : string list =
       if valid_s s then s :: acc
       else build_entry (Status "status") acc false status_error
 
+let process_lst_to_entry = function
+  | [ s; d; n ] -> create_entry n d s
+  | _ -> raise (Invalid_argument "invalid")
+
+let rec process_update_acc st entry acc =
+  match acc with
+  | ("name", n) :: t ->
+      let new_entry = create_entry n (date entry) (status entry) in
+      process_update_acc (change_name entry st new_entry) new_entry t
+  | ("date", d) :: t ->
+      let new_entry = create_entry (name entry) d (status entry) in
+      process_update_acc (change_date entry st new_entry) new_entry t
+  | ("status", s) :: t ->
+      let new_entry = create_entry (name entry) (date entry) s in
+      process_update_acc (change_status entry st new_entry) new_entry t
+  | [] -> st
+  | _ -> raise (Invalid_argument "invalid")
+
 let rec update_entry acc valid error st entry_name =
   if not valid then print_endline error;
   print_endline
     "What would you like to change? Please enter: name, date, status, \
-     cancel to cancel all changes,or done to finish changes.";
+     cancel to cancel all changes, or done to finish changes.";
   let s = read_line () in
   match s with
   | "name" ->
@@ -103,35 +111,16 @@ let rec update_entry acc valid error st entry_name =
          name."
         st entry_name
 
-let process_lst_to_entry = function
-  | [ s; d; n ] -> create_entry n d s
-  | _ -> raise (Invalid_argument "invalid")
-
-let rec process_update_acc st entry acc =
-  match acc with
-  | ("name", n) :: t ->
-      let new_entry = create_entry n (date entry) (status entry) in
-      process_update_acc (change_name entry st new_entry) new_entry t
-  | ("date", d) :: t ->
-      let new_entry = create_entry (name entry) d (status entry) in
-      process_update_acc (change_date entry st new_entry) new_entry t
-  | ("status", s) :: t ->
-      let new_entry = create_entry (name entry) (date entry) s in
-      process_update_acc (change_status entry st new_entry) new_entry t
-  | [] -> st
-  | _ -> raise (Invalid_argument "invalid")
-
-let command_message =
-  "\n\nPlease enter the action you would like to complete."
-  ^ "\n\
-     The options include 'add', 'delete [name of internship]', 'view', \
-     'update [name of internship]', or 'quit'.\n"
-
-let notfound_message =
-  "\nWARNING: The entry you are trying to query does not exist."
-
-let deleted_msg name = "The deletion of " ^ name ^ " was successful!"
-let cmd_string lst = String.concat " " lst
+let rec sort_by st valid error : string =
+  if not valid then print_endline error;
+  print_endline
+    "What would you like to sort by? Please enter either 'name', \
+     'status', or 'none'.";
+  match read_line () with
+  | "name" -> string_of_list (print_t (sort_by_name st))
+  | "status" -> string_of_list (print_t (sort_by_status st))
+  | "none" -> string_of_list (print_t st)
+  | _ -> sort_by st false "Could not recognize your command."
 
 let rec make_tracker msg st =
   print_endline msg;
@@ -152,7 +141,7 @@ let rec make_tracker msg st =
       with NotFound ->
         make_tracker (notfound_message ^ command_message) st)
   | View ->
-      print_endline (string_of_list (print_t st));
+      print_endline (sort_by st true "");
       make_tracker command_message st
   | Update s -> (
       try
@@ -171,7 +160,6 @@ let rec make_tracker msg st =
 let main () =
   ANSITerminal.print_string [ ANSITerminal.red ]
     "Welcome to the Internship Application Tracker Interface!";
-  make_tracker command_message empty
+  make_tracker command_message []
 
-(* Execute the game engine. *)
 let () = main ()
