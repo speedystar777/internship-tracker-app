@@ -6,6 +6,7 @@ type command =
   | View
   | Quit
   | Update of command_phrase
+  | Notes of command_phrase
 
 exception Malformed
 
@@ -16,6 +17,7 @@ let parse str =
     | [ "view" ] -> View
     | [ "quit" ] -> Quit
     | "update" :: t -> Update t
+    | "notes" :: "for" :: t -> Notes t
     | _ -> raise Malformed
   in
   get_command

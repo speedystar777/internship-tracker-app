@@ -16,15 +16,7 @@ let rec delete e (lst : t) =
   | [] -> raise NotFound
   | h :: t -> if e = name h then t else h :: delete e t
 
-let change_status entry lst new_entry =
-  let new_lst = delete (name entry) lst in
-  add new_entry new_lst
-
-let change_name entry lst new_entry =
-  let new_lst = delete (name entry) lst in
-  add new_entry new_lst
-
-let change_date entry lst new_entry =
+let change entry lst new_entry =
   let new_lst = delete (name entry) lst in
   add new_entry new_lst
 

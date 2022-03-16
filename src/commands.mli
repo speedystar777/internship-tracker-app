@@ -6,6 +6,7 @@ type command =
   | View
   | Quit
   | Update of command_phrase
+  | Notes of command_phrase
 
 exception Malformed
 

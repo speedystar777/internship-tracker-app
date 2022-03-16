@@ -34,18 +34,20 @@ let pp_list pp_elt lst =
   in
   "[" ^ pp_elts lst ^ "]"
 
-let test_entry = create_entry "test_entry" "06/23/2022" "applied"
+let test_entry =
+  create_entry "test_entry" "06/23/2022" "applied" (Yes "note")
 
 let test_entry_s_changed =
-  create_entry "test_entry" "06/23/2022" "interviewed"
+  create_entry "test_entry" "06/23/2022" "interviewed" No
 
 let test_entry_d_changed =
-  create_entry "test_entry" "08/06/2022" "interviewed"
+  create_entry "test_entry" "08/06/2022" "interviewed" No
 
 let test_entry_n_changed =
-  create_entry "name_change" "06/23/2022" "interviewed"
+  create_entry "name_change" "06/23/2022" "interviewed" No
 
-let test_entry2 = create_entry "test_entry2" "06/23/2022" "applied"
+let test_entry2 =
+  create_entry "test_entry2" "06/23/2022" "applied" (Yes "note")
 
 let add_test (name : string) e input expected_output : test =
   name >:: fun _ ->
@@ -97,8 +99,7 @@ let change_status_test
     (lst : t)
     (ne : entry)
     (expected_output : t) : test =
-  name >:: fun _ ->
-  assert_equal expected_output (change_status e lst ne)
+  name >:: fun _ -> assert_equal expected_output (change e lst ne)
 
 let change_date_test
     (name : string)
@@ -106,7 +107,7 @@ let change_date_test
     (lst : t)
     (ne : entry)
     (expected_output : t) : test =
-  name >:: fun _ -> assert_equal expected_output (change_date e lst ne)
+  name >:: fun _ -> assert_equal expected_output (change e lst ne)
 
 let change_name_test
     (name : string)
@@ -114,7 +115,7 @@ let change_name_test
     (lst : t)
     (ne : entry)
     (expected_output : t) : test =
-  name >:: fun _ -> assert_equal expected_output (change_name e lst ne)
+  name >:: fun _ -> assert_equal expected_output (change e lst ne)
 
 let state_to_string_test
     (name : string)

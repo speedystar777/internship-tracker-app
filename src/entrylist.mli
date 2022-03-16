@@ -24,17 +24,9 @@ val delete : string -> t -> t
 (** [delete e t] is the entry list [t] with [e] removed. Raises:
     NotFound if entry is not found in [t]. *)
 
-val change_status : entry -> t -> entry -> entry list
-(** [change_status e t s] is the entry list [t] with the status of [e]
-    changed to [s]. Raises: NotFound if entry is not found in [t]. *)
-
-val change_name : entry -> t -> entry -> entry list
-(** [change_name e t n] is the entry list [t] with the name of [e]
-    changed to [n]. Raises: NotFound if entry is not found in [t]. *)
-
-val change_date : entry -> t -> entry -> entry list
-(** [change_date e t d] is the entry list [t] with the date of [e]
-    changed to [d]. Raises: NotFound if entry is not found in [t]. *)
+val change : entry -> t -> entry -> entry list
+(** [change e t s] is the entry list [t] with entry [e]
+    changed to [s]. *)
 
 val find_entry : string -> t -> entry
 (** [find_entry s t] is the entry with name [s] in entry list [t].
