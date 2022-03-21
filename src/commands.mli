@@ -7,6 +7,7 @@ type command =
   | Quit
   | Update of command_phrase
   | Notes of command_phrase
+  | Network
 
 exception Malformed
 

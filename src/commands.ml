@@ -7,6 +7,7 @@ type command =
   | Quit
   | Update of command_phrase
   | Notes of command_phrase
+  | Network
 
 exception Malformed
 
@@ -18,6 +19,7 @@ let parse str =
     | [ "quit" ] -> Quit
     | "update" :: t -> Update t
     | "notes" :: "for" :: t -> Notes t
+    | [ "network" ] -> Network
     | _ -> raise Malformed
   in
   get_command
