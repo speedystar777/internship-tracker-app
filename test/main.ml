@@ -16,24 +16,6 @@ let cmp_set_like_lists lst1 lst2 =
   && List.length lst2 = List.length uniq2
   && uniq1 = uniq2
 
-(** [pp_string s] pretty-prints string [s]. *)
-let pp_string s = "\"" ^ s ^ "\""
-
-(** [pp_list pp_elt lst] pretty-prints list [lst], using [pp_elt] to
-    pretty-print each element of [lst]. *)
-let pp_list pp_elt lst =
-  let pp_elts lst =
-    let rec loop n acc = function
-      | [] -> acc
-      | [ h ] -> acc ^ pp_elt h
-      | h1 :: (h2 :: t as t') ->
-          if n = 100 then acc ^ "..." (* stop printing long list *)
-          else loop (n + 1) (acc ^ pp_elt h1 ^ ";\n   ") t'
-    in
-    loop 0 "" lst
-  in
-  "[" ^ pp_elts lst ^ "]"
-
 let test_entry =
   create_entry "test_entry" "06/23/2022" "applied" (Yes "note")
 
@@ -89,27 +71,10 @@ let command_test_illegal
 let entry_names_test
     (name : string)
     (t : entry list)
-    (input : string)
-    (expected_output : command) : test =
-  name >:: fun _ -> assert_equal expected_output (parse input)
+    (expected_output : string list) : test =
+  name >:: fun _ -> assert_equal expected_output (entry_names t)
 
-let change_status_test
-    (name : string)
-    (e : entry)
-    (lst : t)
-    (ne : entry)
-    (expected_output : t) : test =
-  name >:: fun _ -> assert_equal expected_output (change e lst ne)
-
-let change_date_test
-    (name : string)
-    (e : entry)
-    (lst : t)
-    (ne : entry)
-    (expected_output : t) : test =
-  name >:: fun _ -> assert_equal expected_output (change e lst ne)
-
-let change_name_test
+let change_test
     (name : string)
     (e : entry)
     (lst : t)
@@ -151,35 +116,26 @@ let find_entry_test_illegal
   name >:: fun _ ->
   assert_raises expected_output (fun () -> find_entry entry list)
 
-let record_tests =
+let sort_by_name_test (name : string) (list : t) (expected_output : t) :
+    test =
+  name >:: fun _ -> assert_equal expected_output (sort_by_name list)
+
+let sort_by_status_test (name : string) (list : t) (expected_output : t)
+    : test =
+  name >:: fun _ -> assert_equal expected_output (sort_by_status list)
+
+let notes_string_test
+    (name : string)
+    (e : entry)
+    (expected_output : string) : test =
+  name >:: fun _ -> assert_equal expected_output (notes_string e)
+
+let entry_tests =
   [
     is_equal_test "testing equality of two equal entries" test_entry
       test_entry true;
     is_equal_test "testing equalityof two unequal entries" test_entry
       test_entry2 false;
-    add_test "adding a new entry to an entry list" test_entry []
-      [ test_entry ];
-    add_test_illegal "adding a duplicate entry to an entry list"
-      test_entry [ test_entry ] Duplicate;
-    delete_test "removing an entry from a non-empty entry list"
-      (name test_entry) [ test_entry ] [];
-    delete_test_illegal "removing an entry from an empty entry list"
-      (name test_entry) [] NotFound;
-    delete_test_illegal
-      "removing an entry that is not a member of an entry list"
-      (name test_entry2) [ test_entry ] NotFound;
-    change_status_test
-      "changing the status of an entry from applied to interviewed"
-      test_entry [ test_entry ] test_entry_s_changed
-      [ test_entry_s_changed ];
-    change_name_test
-      "changing the status of an entry from applied to interviewed"
-      test_entry [ test_entry ] test_entry_n_changed
-      [ test_entry_n_changed ];
-    change_date_test
-      "change the date of an entry from 06/23/2022 to 08/06/2022"
-      test_entry [ test_entry ] test_entry_d_changed
-      [ test_entry_d_changed ];
     string_to_state_test
       "matching the string applied with the constructor Applied"
       "applied" Applied;
@@ -189,22 +145,70 @@ let record_tests =
     string_to_state_illegal
       "attempting to illegally match a string with a constructor"
       "completed" InvalidArg;
+    notes_string_test "retrieving notes when they exist" test_entry2
+      "note";
+    notes_string_test "retrieving notes when they don't exist"
+      test_entry_n_changed "No notes";
+  ]
+
+let entry_list_tests =
+  [
+    add_test "adding a new entry to an entry list" test_entry []
+      [ test_entry ];
+    add_test_illegal "adding a duplicate entry to an entry list"
+      test_entry [ test_entry ] Duplicate;
+    delete_test "removing an entry from a non-empty entry list"
+      (name test_entry) [ test_entry ] [];
+    delete_test "removing an entry from an entry list of size 2"
+      (name test_entry)
+      [ test_entry2; test_entry ]
+      [ test_entry2 ];
+    delete_test_illegal "removing an entry from an empty entry list"
+      (name test_entry) [] NotFound;
+    delete_test_illegal
+      "removing an entry that is not a member of an entry list"
+      (name test_entry2) [ test_entry ] NotFound;
+    change_test
+      "changing the status of an entry from applied to interviewed"
+      test_entry [ test_entry ] test_entry_s_changed
+      [ test_entry_s_changed ];
+    change_test
+      "changing the status of an entry from applied to interviewed"
+      test_entry [ test_entry ] test_entry_n_changed
+      [ test_entry_n_changed ];
+    change_test
+      "change the date of an entry from 06/23/2022 to 08/06/2022"
+      test_entry [ test_entry ] test_entry_d_changed
+      [ test_entry_d_changed ];
     find_entry_test_illegal
       "finding an entry that is not a member of an entry list"
       (name test_entry2) [ test_entry ] NotFound;
     find_entry_test "finding an entry that is within an entry list"
       (name test_entry) [ test_entry ] test_entry;
+    sort_by_name_test "sorting by name for internships"
+      [ test_entry_n_changed; test_entry2; test_entry ]
+      [ test_entry_n_changed; test_entry; test_entry2 ];
+    sort_by_status_test "sorting by status for internships"
+      [ test_entry_s_changed; test_entry2; test_entry ]
+      [ test_entry2; test_entry; test_entry_s_changed ];
+    entry_names_test "getting names of all entries in a list"
+      [ test_entry; test_entry2; test_entry_n_changed ]
+      [ "test_entry"; "test_entry2"; "name_change" ];
   ]
 
-let command_test =
+let command_tests =
   [
     command_test "parsing add command" "add" Add;
     command_test "parsing delete command" "delete internship name"
       (Delete [ "internship"; "name" ]);
     command_test "parsing view command" "view" View;
+    command_test "parsing quit command" "quit" Quit;
+    command_test "parsing update command" "update internship name"
+      (Update [ "internship"; "name" ]);
+    command_test "parsing notes command" "notes for internship name"
+      (Notes [ "internship"; "name" ]);
+    command_test "parsing network command" "network" Network;
     command_test "parsing command with spaces" "     add     " Add;
-    command_test "parsing update command" "update name1"
-      (Update [ "name1" ]);
     command_test_illegal "parsing an empty command" "" Malformed;
     command_test_illegal "parsing a malformed delete command" "Delete"
       Malformed;
@@ -214,6 +218,6 @@ let command_test =
 
 let suite =
   "test suite for Internship Tracker"
-  >::: List.flatten [ record_tests; command_test ]
+  >::: List.flatten [ entry_tests; entry_list_tests; command_tests ]
 
 let _ = run_test_tt_main suite

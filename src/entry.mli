@@ -9,9 +9,9 @@ type state =
   | Rejected
       (** The type of values representing the state of an entry *)
 
-type has_note = 
- | Yes of string
- | No 
+type has_note =
+  | Yes of string
+  | No
 
 type id =
   | Name of string
@@ -41,25 +41,28 @@ val name : entry -> string
 val date : entry -> string
 (** [date e] is the date in entry [e]*)
 
+val status : entry -> string
+(** [status e] is the status of entry [e] *)
+
 val notes : entry -> has_note
 (** [notes e] is the note in entry [e]*)
 
 val notes_string : entry -> string
-(** [notes_string e] is the content of the note in entry [e] if it exists, or the string ["No notes"] if there is no note.*)
+(** [notes_string e] is the content of the note in entry [e] if it
+    exists, or the string ["No notes"] if there is no note.*)
 
 val valid_d : string -> bool
 (** [valid_d d] is true if [d] is in a valid format *)
 
-val status : entry -> string
-(** [status e] is the status of entry [e] *)
-
-val process : string -> string
-(** [process s] is the lowercase string [s] separated by only one space between each word, and with no trailing spaces*)
 val valid_s : string -> bool
 (** [valid_s s] is true if [s] is a valid status *)
 
 val valid_n : string -> bool
 (** [valid_n n] is true if [n] is a non-emtpy string*)
+
+val process : string -> string
+(** [process s] is the lowercase string [s] separated by only one space
+    between each word, and with no trailing spaces*)
 
 val is_equal_entry : entry -> entry -> bool
 (** [is_equal_entry e1 e2] is true if entry [e1] is equal to [e2]. *)
@@ -76,4 +79,3 @@ val state_to_string : state -> string
 
 val grab_id_phrase : id -> string
 (** [grab_id_phrase id] is the string value of id [id]*)
-

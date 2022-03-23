@@ -1,3 +1,5 @@
 (library
  (name tracker)
- (public_name Tracker))
+ (public_name Tracker)
+ (instrumentation
+  (backend bisect_ppx)))
