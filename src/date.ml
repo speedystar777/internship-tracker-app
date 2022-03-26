@@ -1,5 +1,3 @@
-open Unix
-
 type months =
   | Jan of int
   | Feb of int
@@ -22,7 +20,7 @@ type t = {
 
 exception InvalidDate
 
-let current_time = Unix.localtime (Unix.time ())
+(*let current_time = Unix.localtime (Unix.time ())*)
 
 let valid_month m =
   String.length m = 2 && int_of_string m > 0 && int_of_string m <= 12
@@ -51,7 +49,7 @@ let month leap = function
 
 let valid_year y =
   String.length y = 4
-  && int_of_string y >= current_time.tm_year
+  && int_of_string y >= 2000
   && int_of_string y <= 2100
 
 let get_days = function
