@@ -1,5 +1,5 @@
 (executable
  (name main)
- (libraries Tracker ounit2)
+ (libraries Tracker ounit2 Unix)
  (instrumentation
   (backend bisect_ppx)))

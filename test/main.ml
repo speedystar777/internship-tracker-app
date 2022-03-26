@@ -3,6 +3,7 @@ open Tracker
 open Entry
 open Entrylist
 open Commands
+open Date
 
 (** [cmp_set_like_lists lst1 lst2] compares two lists to see whether
     they are equivalent set-like lists. That means checking two things.
@@ -17,19 +18,23 @@ let cmp_set_like_lists lst1 lst2 =
   && uniq1 = uniq2
 
 let test_entry =
-  create_entry "test_entry" "06/23/2022" "applied" (Yes "note")
+  create_entry "test_entry"
+    (create_date "06/23/2022")
+    "applied" (Yes "note")
 
 let test_entry_s_changed =
-  create_entry "test_entry" "06/23/2022" "interviewed" No
+  create_entry "test_entry" (create_date "06/23/2022") "interviewed" No
 
 let test_entry_d_changed =
-  create_entry "test_entry" "08/06/2022" "interviewed" No
+  create_entry "test_entry" (create_date "08/06/2022") "interviewed" No
 
 let test_entry_n_changed =
-  create_entry "name_change" "06/23/2022" "interviewed" No
+  create_entry "name_change" (create_date "06/23/2022") "interviewed" No
 
 let test_entry2 =
-  create_entry "test_entry2" "06/23/2022" "applied" (Yes "note")
+  create_entry "test_entry2"
+    (create_date "06/23/2022")
+    "applied" (Yes "note")
 
 let add_test (name : string) e input expected_output : test =
   name >:: fun _ ->
@@ -77,9 +82,9 @@ let entry_names_test
 let change_test
     (name : string)
     (e : entry)
-    (lst : t)
+    (lst : Entrylist.t)
     (ne : entry)
-    (expected_output : t) : test =
+    (expected_output : Entrylist.t) : test =
   name >:: fun _ -> assert_equal expected_output (change e lst ne)
 
 let state_to_string_test
@@ -104,24 +109,28 @@ let string_to_state_illegal
 let find_entry_test
     (name : string)
     (entry : string)
-    (list : t)
+    (list : Entrylist.t)
     (expected_output : entry) : test =
   name >:: fun _ -> assert_equal expected_output (find_entry entry list)
 
 let find_entry_test_illegal
     (name : string)
     (entry : string)
-    (list : t)
+    (list : Entrylist.t)
     (expected_output : exn) : test =
   name >:: fun _ ->
   assert_raises expected_output (fun () -> find_entry entry list)
 
-let sort_by_name_test (name : string) (list : t) (expected_output : t) :
-    test =
+let sort_by_name_test
+    (name : string)
+    (list : Entrylist.t)
+    (expected_output : Entrylist.t) : test =
   name >:: fun _ -> assert_equal expected_output (sort_by_name list)
 
-let sort_by_status_test (name : string) (list : t) (expected_output : t)
-    : test =
+let sort_by_status_test
+    (name : string)
+    (list : Entrylist.t)
+    (expected_output : Entrylist.t) : test =
   name >:: fun _ -> assert_equal expected_output (sort_by_status list)
 
 let notes_string_test

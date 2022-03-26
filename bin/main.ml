@@ -7,6 +7,7 @@ open Contact
 open Network
 open Message_strings
 open Network_main
+open Date
 
 let rec build_entry (id : Entry.id) acc valid error : string list =
   if not valid then
@@ -20,12 +21,13 @@ let rec build_entry (id : Entry.id) acc valid error : string list =
           (process (read_line ()) :: acc)
           true ""
       else build_entry (Name "name") acc true name_error
-  | Date d ->
-      if valid_d d then
-        build_entry (Status "status")
-          (process (read_line ()) :: acc)
-          true ""
-      else build_entry (Date "date") acc false date_error
+  | Date d -> begin
+      try
+        let d = date_string (create_date (process (read_line ()))) in
+        build_entry (Status "status") (d :: acc) true ""
+      with InvalidDate ->
+        build_entry (Date "date") acc false date_error
+    end
   | Status s ->
       let s = process (read_line ()) in
       if valid_s s then (
@@ -41,7 +43,7 @@ let rec build_entry (id : Entry.id) acc valid error : string list =
 
 let process_lst_to_entry = function
   | [ nt; s; d; n ] ->
-      create_entry n d s
+      create_entry n (create_date d) s
         (match nt with
         | "no" -> No
         | s -> Yes s)
@@ -58,7 +60,7 @@ let rec process_update_acc st entry acc =
         new_entry t
   | ("date", d) :: t ->
       let new_entry =
-        create_entry (Entry.name entry) d (status entry)
+        create_entry (Entry.name entry) (create_date d) (status entry)
           (Entry.notes entry)
       in
       process_update_acc
@@ -98,12 +100,14 @@ let rec update_entry acc valid error st entry_name =
       if List.exists (fun x -> String.compare n x = 0) (entry_names st)
       then update_entry acc false dup_message st n
       else update_entry (acc @ [ ("name", n) ]) true "" st entry_name
-  | "date" ->
+  | "date" -> (
       print_endline "Please enter the new date of the selected entry:";
-      let s = process (read_line ()) in
-      if valid_d s then
-        update_entry (acc @ [ ("date", s) ]) true "" st entry_name
-      else update_entry acc false date_error st entry_name
+      try
+        let s = process (read_line ()) in
+        let d = date_string (create_date s) in
+        update_entry (acc @ [ ("date", d) ]) true "" st entry_name
+      with InvalidDate ->
+        update_entry acc false date_error st entry_name)
   | "status" ->
       print_endline
         "Please enter the new status of the selected entry from: new, \

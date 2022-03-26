@@ -1,3 +1,5 @@
+open Date
+
 type state =
   | New
   | Applied
@@ -11,7 +13,7 @@ type has_note =
 
 type entry = {
   name : string;
-  date : string;
+  date : Date.t;
   status : state;
   notes : has_note;
 }
@@ -66,7 +68,6 @@ let valid_s s =
 
 let valid_n n = process n <> ""
 let date entry = entry.date
-let valid_d d = true
 let notes entry = entry.notes
 
 let notes_string entry =
@@ -87,6 +88,6 @@ let print_entry e =
     | Yes s -> "yes"
     | No -> "no"
   in
-  "name: " ^ e.name ^ " | date: " ^ e.date ^ " | status: "
+  "name: " ^ e.name ^ " | date: " ^ date_string e.date ^ " | status: "
   ^ state_to_string e.status
   ^ " | has notes: " ^ note

@@ -1,3 +1,5 @@
+open Date
+
 type entry
 (** The abstract type of values representing an entry. *)
 
@@ -29,7 +31,7 @@ val compare_status : entry -> entry -> int
     [status e2], negative if [statuse1] is less than [status e2], and
     zero otherwise. *)
 
-val create_entry : string -> string -> string -> has_note -> entry
+val create_entry : string -> Date.t -> string -> has_note -> entry
 (** [create_entry s1 s2 s3] is an entry type. *)
 
 exception InvalidArg
@@ -38,7 +40,7 @@ exception InvalidArg
 val name : entry -> string
 (** [name e] is the name of entry [e] *)
 
-val date : entry -> string
+val date : entry -> Date.t
 (** [date e] is the date in entry [e]*)
 
 val status : entry -> string
@@ -50,9 +52,6 @@ val notes : entry -> has_note
 val notes_string : entry -> string
 (** [notes_string e] is the content of the note in entry [e] if it
     exists, or the string ["No notes"] if there is no note.*)
-
-val valid_d : string -> bool
-(** [valid_d d] is true if [d] is in a valid format *)
 
 val valid_s : string -> bool
 (** [valid_s s] is true if [s] is a valid status *)

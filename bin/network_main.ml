@@ -98,15 +98,11 @@ let rec update_contact acc valid error st contact_name =
       print_endline
         "Please enter the new email of the selected contact:";
       let s = process (read_line ()) in
-      if valid_d s then
-        update_contact (acc @ [ ("date", s) ]) true "" st contact_name
-      else update_contact acc false date_error st contact_name
+      update_contact (acc @ [ ("email", s) ]) true "" st contact_name
   | "phone" ->
       print_endline "Please enter the new phone number.";
       let s = process (read_line ()) in
-      if valid_s s then
-        update_contact (acc @ [ ("status", s) ]) true "" st contact_name
-      else update_contact acc false status_error st contact_name
+      update_contact (acc @ [ ("phone", s) ]) true "" st contact_name
   | "notes" ->
       print_endline
         "Please enter the new notes for the selected contact or type \

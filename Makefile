@@ -25,6 +25,7 @@ zip:
 clean:
 	dune clean
 	rm -f tracker.zip
+	rm -f _coverage/
 
 doc:
 	dune build @doc
