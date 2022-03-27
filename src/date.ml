@@ -32,7 +32,7 @@ let parse_date s =
   | [ m; d; y ] -> (m, d, y)
   | _ -> raise InvalidDate
 
-let month leap = function
+let days_in_month leap = function
   | "01" -> Jan 31
   | "02" -> Feb (if leap then 29 else 28)
   | "03" -> Mar 31
@@ -68,7 +68,7 @@ let get_days = function
 
 let valid_day m d y =
   let leap = is_leap y in
-  let max_days = month leap m |> get_days in
+  let max_days = days_in_month leap m |> get_days in
   int_of_string d <= max_days && int_of_string d > 0
 
 let create_date s =
@@ -78,3 +78,6 @@ let create_date s =
   else raise InvalidDate
 
 let date_string d = d.month ^ "/" ^ d.day ^ "/" ^ d.year
+let month t = t.month
+let year t = t.year
+let day t = t.day

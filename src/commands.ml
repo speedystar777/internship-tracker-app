@@ -8,6 +8,7 @@ type command =
   | Update of command_phrase
   | Notes of command_phrase
   | Network
+  | Calendar
 
 exception Malformed
 
@@ -20,6 +21,7 @@ let parse str =
     | "update" :: t -> Update t
     | "notes" :: "for" :: t -> Notes t
     | [ "network" ] -> Network
+    | [ "calendar" ] -> Calendar
     | _ -> raise Malformed
   in
   get_command

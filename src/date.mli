@@ -24,5 +24,8 @@ val get_days : months -> int
 
 (* val current_time : Unix.tm *)
 val is_leap : string -> bool
-val month : bool -> string -> months
+val days_in_month : bool -> string -> months
 val date_string : t -> string
+val month : t -> string
+val year : t -> string
+val day : t -> string

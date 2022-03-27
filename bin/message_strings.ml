@@ -20,7 +20,7 @@ let command_message =
   ^ "\n\
      The options include 'add', 'delete [name of internship]', 'view', \
      'update [name of internship]', \n\
-    \ 'notes for [name of internship]', 'network', 'quit'.\n"
+    \ 'notes for [name of internship]', 'network', 'calendar', 'quit'.\n"
 
 let notfound_message =
   "\nWARNING: The entry you are trying to query does not exist."
@@ -37,3 +37,11 @@ let network_msg =
 
 let name_error =
   "\nCannot enter an empty string or just spaces for internship name"
+
+let cal_start_msg =
+  "\n\
+   Please enter the month and year you would like to view a calendar \
+   for in the form 'mm/yyyy'."
+
+let cal_illegal_msg =
+  "Invalid command. Please enter a valid month and year or 'quit'."

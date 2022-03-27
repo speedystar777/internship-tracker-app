@@ -16,6 +16,9 @@ val mem : entry -> t -> bool
 val entry_names : t -> string list
 (** [entry_names] returns the list of names of each entry in [t] *)
 
+val entry_dates : t -> Date.t list
+(** [entry_dates] returns the list of dates of each entry in [t] *)
+
 val add : entry -> t -> t
 (** [add e t] is the entry list [t] with [e] added, if [e] is not in
     [t]. Raises: Duplicate if [e] is already in [t]. *)
@@ -25,8 +28,7 @@ val delete : string -> t -> t
     NotFound if entry is not found in [t]. *)
 
 val change : entry -> t -> entry -> entry list
-(** [change e t s] is the entry list [t] with entry [e]
-    changed to [s]. *)
+(** [change e t s] is the entry list [t] with entry [e] changed to [s]. *)
 
 val find_entry : string -> t -> entry
 (** [find_entry s t] is the entry with name [s] in entry list [t].

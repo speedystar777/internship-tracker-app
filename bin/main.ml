@@ -8,6 +8,7 @@ open Network
 open Message_strings
 open Network_main
 open Date
+open Calendar_main
 
 let rec build_entry (id : Entry.id) acc valid error : string list =
   if not valid then
@@ -142,7 +143,7 @@ let rec sort_by_entry (st : Entrylist.t) valid error : string =
   | "none" -> string_of_list (Entrylist.print_t st)
   | _ -> sort_by_entry st false "Could not recognize your command."
 
-let rec make_tracker msg network (internships : Entrylist.t) =
+let rec make_tracker msg cal network (internships : Entrylist.t) =
   print_endline msg;
   Printf.printf "> ";
   match parse (read_line ()) with
@@ -151,35 +152,35 @@ let rec make_tracker msg network (internships : Entrylist.t) =
         Entrylist.add
           (build_entry (Name "name") [] true "" |> process_lst_to_entry)
           internships
-        |> make_tracker command_message network
+        |> make_tracker command_message cal network
       with Duplicate ->
         ANSITerminal.print_string [ ANSITerminal.red ]
           (dup_message ^ "\n");
-        make_tracker command_message network internships)
+        make_tracker command_message cal network internships)
   | Delete s -> (
       try
         let str = cmd_string s in
         Entrylist.delete str internships
-        |> make_tracker (deleted_msg str ^ command_message) network
+        |> make_tracker (deleted_msg str ^ command_message) cal network
       with NotFound ->
         ANSITerminal.print_string [ ANSITerminal.red ]
           (notfound_message ^ "\n");
-        make_tracker command_message network internships)
+        make_tracker command_message cal network internships)
   | View ->
       ANSITerminal.print_string [ ANSITerminal.blue ]
         (sort_by_entry internships true "" ^ "\n");
-      make_tracker command_message network internships
+      make_tracker command_message cal network internships
   | Update s -> (
       try
         let entry_name = cmd_string s in
         let entry = find_entry entry_name internships in
         update_entry [] true "" internships entry_name
         |> process_update_acc internships entry
-        |> make_tracker command_message network
+        |> make_tracker command_message cal network
       with NotFound ->
         ANSITerminal.print_string [ ANSITerminal.red ]
           (notfound_message ^ "\n");
-        make_tracker command_message network internships)
+        make_tracker command_message cal network internships)
   | Quit -> exit 0
   | Notes n -> (
       try
@@ -187,23 +188,27 @@ let rec make_tracker msg network (internships : Entrylist.t) =
         let entry = find_entry entry_name internships in
         print_endline ("Your notes for entry " ^ entry_name ^ " are: ");
         print_endline (notes_string entry);
-        make_tracker command_message network internships
+        make_tracker command_message cal network internships
       with NotFound ->
         ANSITerminal.print_string [ ANSITerminal.red ]
           (notfound_message ^ "\n");
-        make_tracker command_message network internships)
+        make_tracker command_message cal network internships)
   | Network ->
-      make_tracker command_message
+      make_tracker command_message cal
         (make_network network_msg network)
         internships
+  | Calendar ->
+      make_tracker command_message
+        (make_calendar internships cal_start_msg)
+        network internships
   | exception Malformed ->
       ANSITerminal.print_string [ ANSITerminal.red ]
         "WARNING: Could not recognize your command\n";
-      make_tracker command_message network internships
+      make_tracker command_message cal network internships
 
 let main () =
   ANSITerminal.print_string [ ANSITerminal.green ]
     "Welcome to the Internship Application Tracker Interface!";
-  make_tracker command_message [] []
+  make_tracker command_message "" [] []
 
 let () = main ()

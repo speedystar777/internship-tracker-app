@@ -6,6 +6,7 @@ exception NotFound
 exception Duplicate
 
 let entry_names = List.map name
+let entry_dates = List.map date
 let mem entry = List.exists (is_equal_entry entry)
 
 let add entry lst =

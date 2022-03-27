@@ -8,6 +8,7 @@ type command =
   | Update of command_phrase
   | Notes of command_phrase
   | Network
+  | Calendar
 
 exception Malformed
 

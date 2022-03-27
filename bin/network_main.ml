@@ -174,6 +174,7 @@ let rec make_network msg (network : Network.t) =
           (notfound_message ^ "\n");
         make_network network_msg network)
   | Network -> make_network network_msg network
+  | Calendar -> make_network network_msg network
   | exception Malformed ->
       ANSITerminal.print_string [ ANSITerminal.red ]
         "WARNING: Could not recognize your command\n";
