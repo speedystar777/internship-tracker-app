@@ -1,3 +1,5 @@
+open Unix
+
 type months =
   | Jan of int
   | Feb of int
@@ -20,7 +22,7 @@ type t = {
 
 exception InvalidDate
 
-(*let current_time = Unix.localtime (Unix.time ())*)
+let current_time = Unix.localtime (Unix.time ())
 
 let valid_month m =
   String.length m = 2 && int_of_string m > 0 && int_of_string m <= 12
@@ -49,7 +51,7 @@ let days_in_month leap = function
 
 let valid_year y =
   String.length y = 4
-  && int_of_string y >= 2000
+  && int_of_string y >= 1900 + current_time.tm_year
   && int_of_string y <= 2100
 
 let get_days = function
@@ -59,12 +61,12 @@ let get_days = function
   | Apr d -> d
   | May d -> d
   | Jun d -> d
+  | Jul d -> d
   | Aug d -> d
   | Sep d -> d
   | Oct d -> d
   | Nov d -> d
   | Dec d -> d
-  | _ -> 0
 
 let valid_day m d y =
   let leap = is_leap y in
@@ -76,6 +78,12 @@ let create_date s =
   if valid_month m && valid_day m d y && valid_year y then
     { month = m; day = d; year = y }
   else raise InvalidDate
+
+let compare_dates d1 d2 =
+  if d1.year = d2.year then
+    if d1.month = d2.month then String.compare d1.day d2.day
+    else String.compare d1.month d2.month
+  else String.compare d1.year d2.year
 
 let date_string d = d.month ^ "/" ^ d.day ^ "/" ^ d.year
 let month t = t.month

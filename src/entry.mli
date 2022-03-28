@@ -28,8 +28,13 @@ val compare_names : entry -> entry -> int
 
 val compare_status : entry -> entry -> int
 (** [compare_status e1 e2] is positive if [status e1] is greater than
-    [status e2], negative if [statuse1] is less than [status e2], and
+    [status e2], negative if [status e1] is less than [status e2], and
     zero otherwise. *)
+
+val compare_entry_dates : entry -> entry -> int
+(** [compare_entry_dates e1 e2] is positive if [date e1] is greater than
+    [date e2], negative if [date e1] is less than [date e2], and zero
+    otherwise. *)
 
 val create_entry : string -> Date.t -> string -> has_note -> entry
 (** [create_entry s1 s2 s3] is an entry type. *)

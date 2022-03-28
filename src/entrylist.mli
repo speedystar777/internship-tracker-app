@@ -42,3 +42,6 @@ val sort_by_name : t -> t
 
 val sort_by_status : t -> t
 (** [sort_by_status t] is [t] sorted by status in alphabetical order *)
+
+val sort_by_date : t -> t
+(** [sort_by_date t] is [t] sorted by date *)

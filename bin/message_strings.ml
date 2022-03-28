@@ -7,7 +7,7 @@ let string_of_list =
 
 let date_error =
   "The date you have entered is invalid. The date must be in the form \
-   mm/dd/yy"
+   mm/dd/yyyy and must be within or after the current year.\n"
 
 let status_error =
   "Please enter a valid status from: new, applied, interviewed, \
@@ -45,3 +45,7 @@ let cal_start_msg =
 
 let cal_illegal_msg =
   "Invalid command. Please enter a valid month and year or 'quit'."
+
+let status_msg =
+  "The options are 'new', 'applied', 'interviewed', 'accepted', \
+   'rejected'."

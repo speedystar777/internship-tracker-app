@@ -80,6 +80,7 @@ let compare_names e1 e2 = String.compare e1.name e2.name
 let compare_status e1 e2 =
   String.compare (state_to_string e1.status) (state_to_string e2.status)
 
+let compare_entry_dates e1 e2 = compare_dates e1.date e2.date
 let is_equal_entry e1 e2 = compare_names e1 e2 = 0
 
 let print_entry e =

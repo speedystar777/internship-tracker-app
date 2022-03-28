@@ -21,11 +21,10 @@ val valid_month : string -> bool
 val valid_year : string -> bool
 val create_date : string -> t
 val get_days : months -> int
-
-(* val current_time : Unix.tm *)
 val is_leap : string -> bool
 val days_in_month : bool -> string -> months
 val date_string : t -> string
 val month : t -> string
 val year : t -> string
 val day : t -> string
+val compare_dates : t -> t -> int

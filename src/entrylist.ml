@@ -1,4 +1,5 @@
 open Entry
+open Date
 
 type t = entry list
 
@@ -29,3 +30,4 @@ let rec find_entry s (lst : t) =
 let print_t = List.map print_entry
 let sort_by_name = List.sort compare_names
 let sort_by_status = List.sort compare_status
+let sort_by_date = List.sort compare_entry_dates

@@ -28,12 +28,21 @@ let rec repeat_spaces n =
   | 0 -> ""
   | n -> "    " ^ repeat_spaces (n - 1)
 
+let add_needed_spaces curr =
+  let curr_string = string_of_int curr in
+  if String.length curr_string = 1 then " " ^ curr_string ^ "  "
+  else curr_string ^ "  "
+
+let is_mem days day = List.exists (fun x -> int_of_string x = day) days
+
 let rec build_calendar max count days curr =
   if count <= 26 && curr <= max then (
-    ANSITerminal.print_string [ ANSITerminal.white ]
-      (if String.length (string_of_int curr) = 1 then
-       " " ^ string_of_int curr ^ "  "
-      else string_of_int curr ^ "  ");
+    if is_mem days curr then
+      ANSITerminal.print_string [ ANSITerminal.red ]
+        (add_needed_spaces curr)
+    else
+      ANSITerminal.print_string [ ANSITerminal.white ]
+        (add_needed_spaces curr);
     build_calendar max (count + 4) days (curr + 1))
   else if count > 26 && curr <= max then (
     print_endline "";
@@ -41,15 +50,17 @@ let rec build_calendar max count days curr =
   else print_endline ""
 
 let print_calendar st m y =
+  print_endline "";
   print_endline (calendar_header m y);
   print_endline weekday_header;
   let start_d = start_weekday m y in
-  let days = entry_dates st |> filter_days in
+  let days = filter_days (entry_dates st) m y in
+  let starred_days = List.map day days in
   ANSITerminal.print_string [ ANSITerminal.white ]
     (repeat_spaces start_d);
   build_calendar
     (days_in_month (is_leap y) m |> get_days)
-    (start_d * 2) days 1
+    (start_d * 4) starred_days 1
 
 let rec make_calendar (st : Entrylist.t) msg =
   print_endline msg;

@@ -10,24 +10,26 @@ open Network_main
 open Date
 open Calendar_main
 
-let rec build_entry (id : Entry.id) acc valid error : string list =
+let rec build_entry (id : Entry.id) acc valid error extra_msg :
+    string list =
   if not valid then
     ANSITerminal.print_string [ ANSITerminal.red ] (error ^ "\n");
   let s = Entry.grab_id_phrase id in
-  print_endline ("Please enter the " ^ s ^ " of the internship");
+  print_endline
+    (("Please enter the " ^ s ^ " of the internship. ") ^ extra_msg);
   match id with
   | Name n ->
       if valid_n n then
         build_entry (Date "date")
           (process (read_line ()) :: acc)
-          true ""
-      else build_entry (Name "name") acc true name_error
+          true "" ""
+      else build_entry (Name "name") acc true name_error ""
   | Date d -> begin
       try
         let d = date_string (create_date (process (read_line ()))) in
-        build_entry (Status "status") (d :: acc) true ""
+        build_entry (Status "status") (d :: acc) true "" status_msg
       with InvalidDate ->
-        build_entry (Date "date") acc false date_error
+        build_entry (Date "date") acc false date_error ""
     end
   | Status s ->
       let s = process (read_line ()) in
@@ -37,9 +39,10 @@ let rec build_entry (id : Entry.id) acc valid error : string list =
            internship: type 'yes' or 'no'";
         let r = process (read_line ()) in
         match r with
-        | "yes" -> build_entry (Notes "notes") (s :: acc) true ""
+        | "yes" -> build_entry (Notes "notes") (s :: acc) true "" ""
         | _ -> "no" :: s :: acc)
-      else build_entry (Status "status") acc false status_error
+      else
+        build_entry (Status "status") acc false status_error status_msg
   | Notes n -> process (read_line ()) :: acc
 
 let process_lst_to_entry = function
@@ -135,11 +138,12 @@ let rec sort_by_entry (st : Entrylist.t) valid error : string =
   if not valid then ANSITerminal.print_string [ ANSITerminal.red ] error;
   print_endline
     "What would you like to sort by? Please enter either 'name', \
-     'status', or 'none'.";
+     'status', 'date', or 'none'.";
   match read_line () with
   | "name" ->
       string_of_list (Entrylist.print_t (Entrylist.sort_by_name st))
   | "status" -> string_of_list (Entrylist.print_t (sort_by_status st))
+  | "date" -> string_of_list (Entrylist.print_t (sort_by_date st))
   | "none" -> string_of_list (Entrylist.print_t st)
   | _ -> sort_by_entry st false "Could not recognize your command."
 
@@ -150,7 +154,8 @@ let rec make_tracker msg cal network (internships : Entrylist.t) =
   | Add -> (
       try
         Entrylist.add
-          (build_entry (Name "name") [] true "" |> process_lst_to_entry)
+          (build_entry (Name "name") [] true "" ""
+          |> process_lst_to_entry)
           internships
         |> make_tracker command_message cal network
       with Duplicate ->

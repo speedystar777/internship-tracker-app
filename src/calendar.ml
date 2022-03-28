@@ -1,6 +1,9 @@
 open Date
 
-let first_weekday y = 6
+let first_weekday y =
+  let year = int_of_string (String.sub y 2 2) in
+  if is_leap y then (year + (year / 4) + 6) mod 7
+  else (year + (year / 4) + 7) mod 7
 
 let start_day l = function
   | Jan d -> 1
@@ -19,7 +22,8 @@ let start_day l = function
 let start_weekday m y =
   let d = days_in_month (is_leap y) m |> start_day (is_leap y) in
   let day = first_weekday y in
-  ((day + (d mod 7)) mod 7) - 1
+  let v = ((day + (d mod 7)) mod 7) - 1 in
+  if v > 0 then v else v + 7
 
 let calendar_header m y =
   match m with
