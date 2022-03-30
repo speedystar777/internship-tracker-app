@@ -17,9 +17,7 @@ let rec get_month_year s =
     | [ "quit" ] -> [ "quit" ]
     | _ -> raise InvalidDate
   with InvalidDate ->
-    print_endline
-      "The date you have entered is invalid. Please enter a date in \
-       the format 'mm/yyyy'.";
+    print_endline date_error;
     Printf.printf "> ";
     get_month_year (read_line ())
 

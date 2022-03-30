@@ -3,7 +3,7 @@ open Date
 
 type t = entry list
 
-exception NotFound
+exception NotMem
 exception Duplicate
 
 let entry_names = List.map name
@@ -15,7 +15,7 @@ let add entry lst =
 
 let rec delete e (lst : t) =
   match lst with
-  | [] -> raise NotFound
+  | [] -> raise NotMem
   | h :: t -> if e = name h then t else h :: delete e t
 
 let change entry lst new_entry =
@@ -24,7 +24,7 @@ let change entry lst new_entry =
 
 let rec find_entry s (lst : t) =
   match lst with
-  | [] -> raise NotFound
+  | [] -> raise NotMem
   | h :: t -> if name h = s then h else find_entry s t
 
 let print_t = List.map print_entry

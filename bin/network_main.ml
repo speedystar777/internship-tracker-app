@@ -140,7 +140,7 @@ let rec make_network msg (network : Network.t) =
   | Delete s -> (
       try
         let str = cmd_string s in
-        delete str network
+        Network.delete str network
         |> make_network (deleted_msg str ^ network_msg)
       with NotFound ->
         ANSITerminal.print_string [ ANSITerminal.red ]

@@ -145,7 +145,7 @@ let rec sort_by_entry (st : Entrylist.t) valid error : string =
   | "status" -> string_of_list (Entrylist.print_t (sort_by_status st))
   | "date" -> string_of_list (Entrylist.print_t (sort_by_date st))
   | "none" -> string_of_list (Entrylist.print_t st)
-  | _ -> sort_by_entry st false "Could not recognize your command."
+  | _ -> sort_by_entry st false "Could not recognize your command.\n"
 
 let rec make_tracker msg cal network (internships : Entrylist.t) =
   print_endline msg;
@@ -167,7 +167,7 @@ let rec make_tracker msg cal network (internships : Entrylist.t) =
         let str = cmd_string s in
         Entrylist.delete str internships
         |> make_tracker (deleted_msg str ^ command_message) cal network
-      with NotFound ->
+      with NotMem ->
         ANSITerminal.print_string [ ANSITerminal.red ]
           (notfound_message ^ "\n");
         make_tracker command_message cal network internships)
@@ -182,7 +182,7 @@ let rec make_tracker msg cal network (internships : Entrylist.t) =
         update_entry [] true "" internships entry_name
         |> process_update_acc internships entry
         |> make_tracker command_message cal network
-      with NotFound ->
+      with NotMem ->
         ANSITerminal.print_string [ ANSITerminal.red ]
           (notfound_message ^ "\n");
         make_tracker command_message cal network internships)
@@ -194,7 +194,7 @@ let rec make_tracker msg cal network (internships : Entrylist.t) =
         print_endline ("Your notes for entry " ^ entry_name ^ " are: ");
         print_endline (notes_string entry);
         make_tracker command_message cal network internships
-      with NotFound ->
+      with NotMem ->
         ANSITerminal.print_string [ ANSITerminal.red ]
           (notfound_message ^ "\n");
         make_tracker command_message cal network internships)

@@ -4,7 +4,7 @@ type t = entry list
 (** The type of values representing a collection of entries without
     duplicates. *)
 
-exception NotFound
+exception NotMem
 (** Raised when an entry is not in the list. *)
 
 exception Duplicate
