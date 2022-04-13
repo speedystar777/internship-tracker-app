@@ -1,6 +1,8 @@
 open Contact
 
 type t = contact list
+(** The type of values representing a collection of contacts without
+    duplicates. *)
 
 exception NotFound
 (** Raised when an entry is not in the list. *)

@@ -6,11 +6,35 @@ open Commands
 open Date
 open Calendar
 
+(* Test Plan:
+
+   Our system was comphrensively tested thorugh a mixture of OUnit and
+   manual testing. Below is a breakdown of which components of our
+   program were tested via OUnit and which were tested manually:
+
+   OUnit: Entry, Calendar, Date, Command, Entrylist, Contact, Network
+   Note: Contact and Network are indirectly tested via the testing of
+   Entry and Entrylist as most functionality was identical with
+   identical functions.
+
+   Manual: Interface
+
+   OUnit test cases were developed via glass-box testing. Bisect was
+   used to ensure good code coverage of all executable paths.
+
+   This testing approach demonstrates the correctness of the system as
+   it ensures that all lines of written code worked as they were
+   intented to. Further, beyond this check, through manually testing the
+   program, not only were we able to witness the correctness of our
+   interface, but through running commands reliant on the code, we were
+   further able to validate that our implementation was correct. *)
+
 (** [cmp_set_like_lists lst1 lst2] compares two lists to see whether
     they are equivalent set-like lists. That means checking two things.
     First, they must both be {i set-like}, meaning that they do not
     contain any duplicates. Second, they must contain the same elements,
     though not necessarily in the same order. *)
+
 let cmp_set_like_lists lst1 lst2 =
   let uniq1 = List.sort_uniq compare_names lst1 in
   let uniq2 = List.sort_uniq compare_names lst2 in
@@ -47,11 +71,18 @@ let date_list =
 
 let date1 = create_date "01/02/2022"
 let date2 = create_date "01/01/2022"
+let date3 = create_date "01/01/2023"
+let date4 = create_date "02/01/2023"
 let date_list_2 = [ create_date "06/23/2022"; create_date "06/05/2022" ]
 
-let add_test (name : string) e input expected_output : test =
+let add_test
+    (name : string)
+    (e : Entry.entry)
+    (input : Entrylist.t)
+    (expected_output : Entrylist.t) : test =
   name >:: fun _ ->
-  assert_equal ~cmp:cmp_set_like_lists expected_output (add e input)
+  assert_equal ~cmp:cmp_set_like_lists expected_output
+    (Entrylist.add e input)
 
 let add_test_illegal (name : string) e input expected_output : test =
   name >:: fun _ ->
@@ -98,7 +129,8 @@ let change_test
     (lst : Entrylist.t)
     (ne : entry)
     (expected_output : Entrylist.t) : test =
-  name >:: fun _ -> assert_equal expected_output (change e lst ne)
+  name >:: fun _ ->
+  assert_equal expected_output (Entrylist.change e lst ne)
 
 let state_to_string_test
     (name : string)
@@ -138,7 +170,8 @@ let sort_by_name_test
     (name : string)
     (list : Entrylist.t)
     (expected_output : Entrylist.t) : test =
-  name >:: fun _ -> assert_equal expected_output (sort_by_name list)
+  name >:: fun _ ->
+  assert_equal expected_output (Entrylist.sort_by_name list)
 
 let sort_by_status_test
     (name : string)
@@ -159,6 +192,22 @@ let start_weekday_test
     (expected_output : int) : test =
   name >:: fun _ ->
   assert_equal expected_output (start_weekday month year)
+
+let calendar_header_test
+    (name : string)
+    (month : string)
+    (year : string)
+    (expected_output : string) : test =
+  name >:: fun _ ->
+  assert_equal expected_output (calendar_header month year)
+
+let calendar_header_test_illegal
+    (name : string)
+    (month : string)
+    (year : string)
+    (expected_output : exn) : test =
+  name >:: fun _ ->
+  assert_raises expected_output (fun () -> calendar_header month year)
 
 let first_weekday_test
     (name : string)
@@ -236,6 +285,22 @@ let compare_dates_test
     (expected_output : int) : test =
   name >:: fun _ -> assert_equal expected_output (compare_dates d1 d2)
 
+let process_test (name : string) (s : string) (expected_output : string)
+    : test =
+  name >:: fun _ -> assert_equal expected_output (process s)
+
+let valid_s_test (name : string) (s : string) (expected_output : bool) :
+    test =
+  name >:: fun _ -> assert_equal expected_output (valid_s s)
+
+let date_test (name : string) (e : entry) (expected_output : Date.t) :
+    test =
+  name >:: fun _ -> assert_equal expected_output (date e)
+
+let notes_test (name : string) (e : entry) (expected_output : has_note)
+    : test =
+  name >:: fun _ -> assert_equal expected_output (notes e)
+
 let entry_tests =
   [
     is_equal_test "testing equality of two equal entries" test_entry
@@ -255,6 +320,14 @@ let entry_tests =
       "note";
     notes_string_test "retrieving notes when they don't exist"
       test_entry_n_changed "No notes";
+    process_test "processing empty string" "" "";
+    process_test "processing string with extra spaces"
+      "    process   test " "process test";
+    valid_s_test "'new' is a valid state" "new" true;
+    valid_s_test "'old' is not a valid state" "old" false;
+    date_test "date of test_entry is 06/23/2022" test_entry
+      (create_date "06/23/2022");
+    notes_test "notes of test_entry is Yes" test_entry (Yes "note");
   ]
 
 let entry_list_tests =
@@ -351,9 +424,15 @@ let date_tests =
       "comparing two unequal dates with the first smaller than the \
        second"
       date2 date1 (-1);
+    compare_dates_test "comparing two equal dates" date1 date1 0;
     compare_dates_test
-      "comparing two equal dates with the first greater than the second"
-      date1 date1 0;
+      "comparing two uequal dates with the first greater than the \
+       second"
+      date3 date2 1;
+    compare_dates_test
+      "comparing two unequal dates with the first greater than the \
+       second"
+      date4 date3 1;
   ]
 
 let calendar_tests =
@@ -382,6 +461,15 @@ let calendar_tests =
     filter_days_test "filter empty list" [] "12" "2025" [];
     filter_days_test "filter list with date that doesn't exist"
       date_list "07" "08" [];
+    calendar_header_test "Calendar header should be October 2022" "10"
+      "2022" "October 2022";
+    calendar_header_test "Calendar header should be July 2001" "07"
+      "2001" "July 2001";
+    calendar_header_test "Calendar header should be June 2013" "06"
+      "2013" "June 2013";
+    calendar_header_test_illegal
+      "Calendar header should raise an expression" "invalid" "2022"
+      InvalidDate;
   ]
 
 let suite =

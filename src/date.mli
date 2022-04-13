@@ -1,3 +1,4 @@
+(** The type of values representing the months of the year. *)
 type months =
   | Jan of int
   | Feb of int
@@ -13,7 +14,7 @@ type months =
   | Dec of int
 
 type t
-(** The type of values representing a date. *)
+(** The abstract type of values representing a date. *)
 
 exception InvalidDate
 (** Raised when date is not valid. *)
@@ -49,11 +50,13 @@ val days_in_month : bool -> string -> months
 
 val date_string : t -> string
 (** [date_string d] is the string of date type [d]. *)
-    
+
 val month : t -> string
 (** [month t] is the month of date [t] *)
+
 val year : t -> string
 (** [year t] is the year of date [t] *)
+
 val day : t -> string
 (** [day t] is the day of date [t] *)
 

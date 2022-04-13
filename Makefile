@@ -8,6 +8,7 @@ utop:
 
 test:
 	OCAMLRUNPARAM=b dune exec test/main.exe
+	OCAMLRUNPARAM=b dune exec test/contact_network.exe
 
 tracker:
 	OCAMLRUNPARAM=b dune exec bin/main.exe
@@ -30,6 +31,9 @@ clean:
 doc:
 	dune build @doc
 
-coverage:
-	find ./src/ -name '*.coverage' | xargs rm -f
-	dune runtest --instrument-with bisect_ppx --force
+coverage: bisect-clean
+	-dune exec --instrument-with bisect_ppx --force test/main.exe
+	bisect-ppx-report html
+
+bisect-clean:
+	rm -rf _coverage bisect*.coverage

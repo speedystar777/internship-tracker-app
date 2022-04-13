@@ -3,18 +3,20 @@ open Date
 type entry
 (** The abstract type of values representing an entry. *)
 
+(** The type of values representing the state of an entry *)
 type state =
   | New
   | Applied
   | Interviewed
   | Accepted
   | Rejected
-      (** The type of values representing the state of an entry *)
 
+(** The type indicating whether a note exists. *)
 type has_note =
   | Yes of string
   | No
 
+(** The type representing different forms of [id] *)
 type id =
   | Name of string
   | Date of string

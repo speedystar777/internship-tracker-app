@@ -1,9 +1,12 @@
 type contact
+(** The type of value representing a contact. *)
 
+(** The type indicating whether a note exists. *)
 type has_note =
   | Yes of string
   | No
 
+(** The type representing different forms of [id] *)
 type id =
   | Name of string
   | Email of string
