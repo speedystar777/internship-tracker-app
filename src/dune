@@ -1,6 +1,6 @@
 (library
  (name tracker)
  (public_name Tracker)
- (libraries unix)
+ (libraries yojson unix)
  (instrumentation
   (backend bisect_ppx)))

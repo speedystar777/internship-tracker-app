@@ -41,7 +41,7 @@ let notes contact = contact.notes
 let notes_str contact =
   match contact.notes with
   | Yes s -> s
-  | No -> "N/A"
+  | No -> "No notes"
 
 let create_contact name email phone note =
   { name; email; phone; notes = note }

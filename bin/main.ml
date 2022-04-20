@@ -9,6 +9,9 @@ open Message_strings
 open Network_main
 open Date
 open Calendar_main
+open Yojson.Basic
+open Create
+open Read
 
 let rec build_entry (id : Entry.id) acc valid error extra_msg :
     string list =
@@ -147,7 +150,7 @@ let rec sort_by_entry (st : Entrylist.t) valid error : string =
   | "none" -> string_of_list (Entrylist.print_t st)
   | _ -> sort_by_entry st false "Could not recognize your command.\n"
 
-let rec make_tracker msg cal network (internships : Entrylist.t) =
+let rec make_tracker user msg cal network (internships : Entrylist.t) =
   print_endline msg;
   Printf.printf "> ";
   match parse (read_line ()) with
@@ -157,63 +160,104 @@ let rec make_tracker msg cal network (internships : Entrylist.t) =
           (build_entry (Name "name") [] true "" ""
           |> process_lst_to_entry)
           internships
-        |> make_tracker command_message cal network
+        |> make_tracker user command_message cal network
       with Duplicate ->
         ANSITerminal.print_string [ ANSITerminal.red ]
           (dup_message ^ "\n");
-        make_tracker command_message cal network internships)
+        make_tracker user command_message cal network internships)
   | Delete s -> (
       try
         let str = cmd_string s in
         Entrylist.delete str internships
-        |> make_tracker (deleted_msg str ^ command_message) cal network
+        |> make_tracker user
+             (deleted_msg str ^ command_message)
+             cal network
       with NotMem ->
         ANSITerminal.print_string [ ANSITerminal.red ]
           (notfound_message ^ "\n");
-        make_tracker command_message cal network internships)
+        make_tracker user command_message cal network internships)
   | View ->
       ANSITerminal.print_string [ ANSITerminal.blue ]
         (sort_by_entry internships true "" ^ "\n");
-      make_tracker command_message cal network internships
+      make_tracker user command_message cal network internships
   | Update s -> (
       try
         let entry_name = cmd_string s in
         let entry = find_entry entry_name internships in
         update_entry [] true "" internships entry_name
         |> process_update_acc internships entry
-        |> make_tracker command_message cal network
+        |> make_tracker user command_message cal network
       with NotMem ->
         ANSITerminal.print_string [ ANSITerminal.red ]
           (notfound_message ^ "\n");
-        make_tracker command_message cal network internships)
-  | Quit -> exit 0
+        make_tracker user command_message cal network internships)
+  | Quit ->
+      write_file internships network user;
+      exit 0
   | Notes n -> (
       try
         let entry_name = cmd_string n in
         let entry = find_entry entry_name internships in
         print_endline ("Your notes for entry " ^ entry_name ^ " are: ");
         print_endline (notes_string entry);
-        make_tracker command_message cal network internships
+        make_tracker user command_message cal network internships
       with NotMem ->
         ANSITerminal.print_string [ ANSITerminal.red ]
           (notfound_message ^ "\n");
-        make_tracker command_message cal network internships)
+        make_tracker user command_message cal network internships)
   | Network ->
-      make_tracker command_message cal
+      make_tracker user command_message cal
         (make_network network_msg network)
         internships
   | Calendar ->
-      make_tracker command_message
+      make_tracker user command_message
         (make_calendar internships cal_start_msg)
         network internships
   | exception Malformed ->
       ANSITerminal.print_string [ ANSITerminal.red ]
         "WARNING: Could not recognize your command\n";
-      make_tracker command_message cal network internships
+      make_tracker user command_message cal network internships
+
+let valid_user s = not (String.contains s ' ')
+
+let does_exist u =
+  try Sys.file_exists ("data/" ^ u ^ ".json")
+  with Sys_error s -> false
+
+let rec new_user m =
+  print_endline m;
+  let u = read_line () in
+  if valid_user u && not (does_exist u) then (
+    write_file [] [] u;
+    u)
+  else if not (valid_user u) then new_user invalid_username_msg
+  else new_user username_exists_msg
+
+let rec returning_user msg =
+  print_endline msg;
+  let user = read_line () in
+  if does_exist user then user
+  else
+    returning_user
+      ("The username you have entered does not exist.\n" ^ msg)
+
+let rec get_data () =
+  print_endline new_or_return_msg;
+  let answer = read_line () in
+  match answer with
+  | "n" -> new_user username_msg
+  | "r" -> returning_user "Please enter your username."
+  | _ ->
+      print_endline "The input was invalid.";
+      get_data ()
 
 let main () =
   ANSITerminal.print_string [ ANSITerminal.green ]
     "Welcome to the Internship Application Tracker Interface!";
-  make_tracker command_message "" [] []
+  print_endline "\n Please enter your username";
+  let user = get_data () in
+  make_tracker user command_message ""
+    (from_json_network user)
+    (from_json_internships user)
 
 let () = main ()

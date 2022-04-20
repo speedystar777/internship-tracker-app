@@ -49,3 +49,20 @@ let cal_illegal_msg =
 let status_msg =
   "The options are 'new', 'applied', 'interviewed', 'accepted', \
    'rejected'."
+
+let new_or_return_msg =
+  "\n\
+   Are you a new or returning user. Please enter 'n' for new user and \
+   'r' for returning user [(n/r)]?"
+
+let username_msg =
+  "Please enter your desired username. It may only contain letters \
+   and/or numbers."
+
+let username_exists_msg =
+  "The username you are trying to create already exists. Please enter \
+   a new desired username. It may only contain altters and/or numbers"
+
+let invalid_username_msg =
+  "The inputted username was invalid. Please enter a new desired \
+   username. It may only contain letters and/or numbers."
