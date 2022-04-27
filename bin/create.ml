@@ -37,11 +37,17 @@ let network_to_json (network : contact list) : Yojson.Basic.t =
   in
   `List (build_network network)
 
-let to_json internships network : Yojson.Basic.t =
+let to_json password internships network : Yojson.Basic.t =
   let internship_array = internship_to_json internships in
   let network_array = network_to_json network in
   `Assoc
-    [ ("internships", internship_array); ("network", network_array) ]
+    [
+      ("internships", internship_array);
+      ("network", network_array);
+      ("password", `String password);
+    ]
 
-let write_file internships network name =
-  to_file ("data/" ^ name ^ ".json") (to_json internships network)
+let write_file password internships network name =
+  to_file
+    ("data/" ^ name ^ ".json")
+    (to_json password internships network)

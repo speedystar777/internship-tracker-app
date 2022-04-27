@@ -12,6 +12,10 @@ open Calendar_main
 open Yojson.Basic
 open Create
 open Read
+open String
+
+let clean r =
+  List.filter (fun x -> x <> "") (String.split_on_char ' ' r)
 
 let rec build_entry (id : Entry.id) acc valid error extra_msg :
     string list =
@@ -25,14 +29,15 @@ let rec build_entry (id : Entry.id) acc valid error extra_msg :
       if valid_n n then
         build_entry (Date "date")
           (process (read_line ()) :: acc)
-          true "" ""
+          true "" "Please use the format dd/mm/yyyy."
       else build_entry (Name "name") acc true name_error ""
   | Date d -> begin
       try
         let d = date_string (create_date (process (read_line ()))) in
         build_entry (Status "status") (d :: acc) true "" status_msg
       with InvalidDate ->
-        build_entry (Date "date") acc false date_error ""
+        build_entry (Date "date") acc false date_error
+          "Please use the format dd/mm/yyyy."
     end
   | Status s ->
       let s = process (read_line ()) in
@@ -99,15 +104,15 @@ let rec update_entry acc valid error st entry_name =
   print_endline
     "What would you like to change? Please enter: name, date, status, \
      notes, cancel to cancel all changes, or done to finish changes.";
-  let s = read_line () in
-  match s with
-  | "name" ->
+  let r = clean (read_line ()) in
+  match r with
+  | [ "name" ] ->
       print_endline "Please enter the new name of the selected entry:";
       let n = process (read_line ()) in
       if List.exists (fun x -> String.compare n x = 0) (entry_names st)
       then update_entry acc false dup_message st n
       else update_entry (acc @ [ ("name", n) ]) true "" st entry_name
-  | "date" -> (
+  | [ "date" ] -> (
       print_endline "Please enter the new date of the selected entry:";
       try
         let s = process (read_line ()) in
@@ -115,7 +120,7 @@ let rec update_entry acc valid error st entry_name =
         update_entry (acc @ [ ("date", d) ]) true "" st entry_name
       with InvalidDate ->
         update_entry acc false date_error st entry_name)
-  | "status" ->
+  | [ "status" ] ->
       print_endline
         "Please enter the new status of the selected entry from: new, \
          applied, interviewed, accepted, rejected";
@@ -123,14 +128,14 @@ let rec update_entry acc valid error st entry_name =
       if valid_s s then
         update_entry (acc @ [ ("status", s) ]) true "" st entry_name
       else update_entry acc false status_error st entry_name
-  | "notes" ->
+  | [ "notes" ] ->
       print_endline
         "Please enter the new notes for the selected entry or type \
          cancel";
       let s = process (read_line ()) in
       update_entry (acc @ [ ("notes", s) ]) true "" st entry_name
-  | "done" -> acc
-  | "cancel" -> []
+  | [ "done" ] -> acc
+  | [ "cancel" ] -> []
   | _ ->
       update_entry acc false
         "The field name was not recognized. Please enter a valid field \
@@ -142,15 +147,22 @@ let rec sort_by_entry (st : Entrylist.t) valid error : string =
   print_endline
     "What would you like to sort by? Please enter either 'name', \
      'status', 'date', or 'none'.";
-  match read_line () with
-  | "name" ->
+  match clean (read_line ()) with
+  | [ "name" ] ->
       string_of_list (Entrylist.print_t (Entrylist.sort_by_name st))
-  | "status" -> string_of_list (Entrylist.print_t (sort_by_status st))
-  | "date" -> string_of_list (Entrylist.print_t (sort_by_date st))
-  | "none" -> string_of_list (Entrylist.print_t st)
+  | [ "status" ] ->
+      string_of_list (Entrylist.print_t (sort_by_status st))
+  | [ "date" ] -> string_of_list (Entrylist.print_t (sort_by_date st))
+  | [ "none" ] -> string_of_list (Entrylist.print_t st)
   | _ -> sort_by_entry st false "Could not recognize your command.\n"
 
-let rec make_tracker user msg cal network (internships : Entrylist.t) =
+let rec make_tracker
+    user
+    password
+    msg
+    cal
+    network
+    (internships : Entrylist.t) =
   print_endline msg;
   Printf.printf "> ";
   match parse (read_line ()) with
@@ -160,39 +172,42 @@ let rec make_tracker user msg cal network (internships : Entrylist.t) =
           (build_entry (Name "name") [] true "" ""
           |> process_lst_to_entry)
           internships
-        |> make_tracker user command_message cal network
+        |> make_tracker user password command_message cal network
       with Duplicate ->
         ANSITerminal.print_string [ ANSITerminal.red ]
           (dup_message ^ "\n");
-        make_tracker user command_message cal network internships)
+        make_tracker user password command_message cal network
+          internships)
   | Delete s -> (
       try
         let str = cmd_string s in
         Entrylist.delete str internships
-        |> make_tracker user
+        |> make_tracker user password
              (deleted_msg str ^ command_message)
              cal network
       with NotMem ->
         ANSITerminal.print_string [ ANSITerminal.red ]
           (notfound_message ^ "\n");
-        make_tracker user command_message cal network internships)
+        make_tracker user password command_message cal network
+          internships)
   | View ->
       ANSITerminal.print_string [ ANSITerminal.blue ]
         (sort_by_entry internships true "" ^ "\n");
-      make_tracker user command_message cal network internships
+      make_tracker user password command_message cal network internships
   | Update s -> (
       try
         let entry_name = cmd_string s in
         let entry = find_entry entry_name internships in
         update_entry [] true "" internships entry_name
         |> process_update_acc internships entry
-        |> make_tracker user command_message cal network
+        |> make_tracker user password command_message cal network
       with NotMem ->
         ANSITerminal.print_string [ ANSITerminal.red ]
           (notfound_message ^ "\n");
-        make_tracker user command_message cal network internships)
+        make_tracker user password command_message cal network
+          internships)
   | Quit ->
-      write_file internships network user;
+      write_file password internships network user;
       exit 0
   | Notes n -> (
       try
@@ -200,63 +215,87 @@ let rec make_tracker user msg cal network (internships : Entrylist.t) =
         let entry = find_entry entry_name internships in
         print_endline ("Your notes for entry " ^ entry_name ^ " are: ");
         print_endline (notes_string entry);
-        make_tracker user command_message cal network internships
+        make_tracker user password command_message cal network
+          internships
       with NotMem ->
         ANSITerminal.print_string [ ANSITerminal.red ]
           (notfound_message ^ "\n");
-        make_tracker user command_message cal network internships)
+        make_tracker user password command_message cal network
+          internships)
   | Network ->
-      make_tracker user command_message cal
+      make_tracker user password command_message cal
         (make_network network_msg network)
         internships
   | Calendar ->
-      make_tracker user command_message
+      make_tracker user password command_message
         (make_calendar internships cal_start_msg)
         network internships
   | exception Malformed ->
       ANSITerminal.print_string [ ANSITerminal.red ]
         "WARNING: Could not recognize your command\n";
-      make_tracker user command_message cal network internships
+      make_tracker user password command_message cal network internships
 
-let valid_user s = not (String.contains s ' ')
+let is_alpha_numeric = function
+  | 'a' .. 'z' | 'A' .. 'Z' | '0' .. '9' -> true
+  | _ -> false
+
+let explode s = List.init (String.length s) (String.get s)
+let valid_login s = List.for_all is_alpha_numeric (explode s)
 
 let does_exist u =
   try Sys.file_exists ("data/" ^ u ^ ".json")
   with Sys_error s -> false
 
+let rec create_password msg =
+  print_endline msg;
+  let p = read_line () in
+  if valid_login p then p
+  else
+    create_password ("The password you have entered is invalid.\n" ^ msg)
+
 let rec new_user m =
   print_endline m;
   let u = read_line () in
-  if valid_user u && not (does_exist u) then (
-    write_file [] [] u;
-    u)
-  else if not (valid_user u) then new_user invalid_username_msg
+  if valid_login u && not (does_exist u) then (
+    let p = create_password new_password_msg in
+    write_file p [] [] u;
+    (u, p))
+  else if not (valid_login u) then new_user invalid_username_msg
   else new_user username_exists_msg
+
+let rec get_password user =
+  print_endline "Please enter your password:";
+  let pass = from_json_password user in
+  let entered = read_line () in
+  if entered = pass then (user, entered)
+  else (
+    ANSITerminal.print_string [ ANSITerminal.red ]
+      "Incorrect password.\n";
+    get_password user)
 
 let rec returning_user msg =
   print_endline msg;
   let user = read_line () in
-  if does_exist user then user
+  if does_exist user then get_password user
   else
     returning_user
       ("The username you have entered does not exist.\n" ^ msg)
 
 let rec get_data () =
-  print_endline new_or_return_msg;
-  let answer = read_line () in
-  match answer with
-  | "n" -> new_user username_msg
-  | "r" -> returning_user "Please enter your username."
+  print_endline (new_or_return_msg ^ "To quit, enter 'quit'.");
+  match clean (read_line ()) with
+  | [ "n" ] -> new_user username_msg
+  | [ "r" ] -> returning_user "Please enter your username:"
+  | [ "quit" ] -> exit 0
   | _ ->
       print_endline "The input was invalid.";
       get_data ()
 
 let main () =
   ANSITerminal.print_string [ ANSITerminal.green ]
-    "Welcome to the Internship Application Tracker Interface!";
-  print_endline "\n Please enter your username";
-  let user = get_data () in
-  make_tracker user command_message ""
+    "Welcome to the Internship Application Tracker Interface!\n";
+  let user, password = get_data () in
+  make_tracker user password command_message ""
     (from_json_network user)
     (from_json_internships user)
 

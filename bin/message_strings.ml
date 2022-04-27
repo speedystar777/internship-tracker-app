@@ -66,3 +66,7 @@ let username_exists_msg =
 let invalid_username_msg =
   "The inputted username was invalid. Please enter a new desired \
    username. It may only contain letters and/or numbers."
+
+let new_password_msg =
+  "Please enter your desired password. It may only contain letters and \
+   numbers."

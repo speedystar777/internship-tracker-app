@@ -68,3 +68,7 @@ let get_network_list =
 let from_json_network name =
   Util.to_assoc (read_file name)
   |> List.assoc "network" |> Util.to_list |> get_network_list
+
+let from_json_password name =
+  Util.to_assoc (read_file name)
+  |> List.assoc "password" |> Util.to_string
