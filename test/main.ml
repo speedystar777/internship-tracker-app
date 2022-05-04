@@ -191,7 +191,9 @@ let start_weekday_test
     (year : string)
     (expected_output : int) : test =
   name >:: fun _ ->
-  assert_equal expected_output (start_weekday month year)
+  assert_equal expected_output
+    (start_weekday month year)
+    ~printer:string_of_int
 
 let calendar_header_test
     (name : string)
@@ -310,9 +312,30 @@ let entry_tests =
     string_to_state_test
       "matching the string applied with the constructor Applied"
       "applied" Applied;
+    string_to_state_test
+      "matching the string new with the constructor New" "new" New;
+    string_to_state_test
+      "matching the string interviewed with the constructor Interviewed"
+      "interviewed" Interviewed;
+    string_to_state_test
+      "matching the string accepted with the constructor Accepted"
+      "accepted" Accepted;
+    string_to_state_test
+      "matching the string rejected with the constructor Rejected"
+      "rejected" Rejected;
     state_to_string_test
       "matching the constructor Interviewed with interviewed"
       Interviewed "interviewed";
+    state_to_string_test "matching the constructor New with new" New
+      "new";
+    state_to_string_test "matching the constructor Applied with applied"
+      Applied "applied";
+    state_to_string_test
+      "matching the constructor Accepted with accepted" Accepted
+      "accepted";
+    state_to_string_test
+      "matching the constructor Rejected with rejected" Rejected
+      "rejected";
     string_to_state_illegal
       "attempting to illegally match a string with a constructor"
       "completed" InvalidArg;
@@ -324,6 +347,10 @@ let entry_tests =
     process_test "processing string with extra spaces"
       "    process   test " "process test";
     valid_s_test "'new' is a valid state" "new" true;
+    valid_s_test "'interviewed' is a valid state" "interviewed" true;
+    valid_s_test "'applied' is a valid state" "applied" true;
+    valid_s_test "'accepted' is a valid state" "accepted" true;
+    valid_s_test "'rejected' is a valid state" "rejected" true;
     valid_s_test "'old' is not a valid state" "old" false;
     date_test "date of test_entry is 06/23/2022" test_entry
       (create_date "06/23/2022");
@@ -403,6 +430,26 @@ let date_tests =
       "02/29/2024";
     create_date_test "April 1st, 2022 is a valid date " "04/01/2022"
       "04/01/2022";
+    create_date_test "January 3rd, 2022 is a valid date " "01/03/2022"
+      "01/03/2022";
+    create_date_test "March 5th, 2022 is a valid date " "03/05/2022"
+      "03/05/2022";
+    create_date_test "May 6th, 2022 is a valid date " "05/06/2022"
+      "05/06/2022";
+    create_date_test "June 6th, 2022 is a valid date " "06/06/2022"
+      "06/06/2022";
+    create_date_test "July 6th, 2022 is a valid date " "07/06/2022"
+      "07/06/2022";
+    create_date_test "August 6th, 2022 is a valid date " "08/06/2022"
+      "08/06/2022";
+    create_date_test "September 6th, 2022 is a valid date " "09/06/2022"
+      "09/06/2022";
+    create_date_test "October 6th, 2022 is a valid date " "10/06/2022"
+      "10/06/2022";
+    create_date_test "November 6th, 2022 is a valid date " "11/06/2022"
+      "11/06/2022";
+    create_date_test "December 6th, 2022 is a valid date " "12/06/2022"
+      "12/06/2022";
     create_date_test_illegal "February 29th, 2020 is not a valid date "
       "02/29/2020" InvalidDate;
     create_date_test_illegal "00/00/0000 is not a valid date "
@@ -413,6 +460,32 @@ let date_tests =
     date_string_test "converting a date to a string" date1 "01/02/2022";
     days_in_month_test "extracting the number of days in June" true "06"
       (Jun 30);
+    days_in_month_test "extracting the number of days in January" true
+      "01" (Jan 31);
+    days_in_month_test
+      "extracting the number of days in February (leap year)" true "02"
+      (Feb 29);
+    days_in_month_test
+      "extracting the number of days in February (non-leap year)" false
+      "02" (Feb 28);
+    days_in_month_test "extracting the number of days in March" true
+      "03" (Mar 31);
+    days_in_month_test "extracting the number of days in April" true
+      "04" (Apr 30);
+    days_in_month_test "extracting the number of days in May" true "05"
+      (May 31);
+    days_in_month_test "extracting the number of days in July" true "07"
+      (Jul 31);
+    days_in_month_test "extracting the number of days in August" true
+      "08" (Aug 31);
+    days_in_month_test "extracting the number of days in September" true
+      "09" (Sep 30);
+    days_in_month_test "extracting the number of days in October" true
+      "10" (Oct 31);
+    days_in_month_test "extracting the number of days in November" true
+      "11" (Nov 30);
+    days_in_month_test "extracting the number of days in December" true
+      "12" (Dec 31);
     compare_dates_test
       "comparing two unequal dates with the first greater than the \
        second"
@@ -442,6 +515,19 @@ let calendar_tests =
       "01" "2022" 6;
     start_weekday_test "start weekday of month in leap year" "07" "2024"
       1;
+    start_weekday_test "start weekday of February 2022" "02" "2022" 2;
+    start_weekday_test "start weekday of January 2022" "01" "2022" 6;
+    start_weekday_test "start weekday of February 2024" "02" "2024" 4;
+    start_weekday_test "start weekday of March 2022" "03" "2022" 2;
+    start_weekday_test "start weekday of April 2022" "04" "2022" 5;
+    start_weekday_test "start weekday of May 2022" "05" "2022" 0;
+    start_weekday_test "start weekday of June 2022" "06" "2022" 3;
+    start_weekday_test "start weekday of July 2022" "07" "2022" 5;
+    start_weekday_test "start weekday of August 2022" "08" "2022" 1;
+    start_weekday_test "start weekday of September 2022" "09" "2022" 4;
+    start_weekday_test "start weekday of October 2022" "10" "2022" 6;
+    start_weekday_test "start weekday of November 2022" "11" "2022" 2;
+    start_weekday_test "start weekday of December 2022" "12" "2022" 4;
     first_weekday_test "first weekday of leap year" "2024" 1;
     first_weekday_test "first weekday of non-leap year" "2023" 0;
     start_day_test "start day for january in leap year" true (Jan 31) 1;
@@ -461,12 +547,30 @@ let calendar_tests =
     filter_days_test "filter empty list" [] "12" "2025" [];
     filter_days_test "filter list with date that doesn't exist"
       date_list "07" "08" [];
+    calendar_header_test "Calendar header should be January 2022" "01"
+      "2022" "January 2022";
+    calendar_header_test "Calendar header should be February 2022" "02"
+      "2022" "February 2022";
+    calendar_header_test "Calendar header should be March 2022" "03"
+      "2022" "March 2022";
+    calendar_header_test "Calendar header should be April 2022" "04"
+      "2022" "April 2022";
+    calendar_header_test "Calendar header should be May 2022" "05"
+      "2022" "May 2022";
     calendar_header_test "Calendar header should be October 2022" "10"
       "2022" "October 2022";
     calendar_header_test "Calendar header should be July 2001" "07"
       "2001" "July 2001";
     calendar_header_test "Calendar header should be June 2013" "06"
       "2013" "June 2013";
+    calendar_header_test "Calendar header should be August 2022" "08"
+      "2022" "August 2022";
+    calendar_header_test "Calendar header should be September 2022" "09"
+      "2022" "September 2022";
+    calendar_header_test "Calendar header should be November 2022" "11"
+      "2022" "November 2022";
+    calendar_header_test "Calendar header should be December 2022" "12"
+      "2022" "December 2022";
     calendar_header_test_illegal
       "Calendar header should raise an expression" "invalid" "2022"
       InvalidDate;

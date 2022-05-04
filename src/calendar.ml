@@ -23,7 +23,7 @@ let start_weekday m y =
   let d = days_in_month (is_leap y) m |> start_day (is_leap y) in
   let day = first_weekday y in
   let v = ((day + (d mod 7)) mod 7) - 1 in
-  if v > 0 then v else v + 7
+  if v > 0 then v mod 7 else (v + 7) mod 7
 
 let calendar_header m y =
   match m with

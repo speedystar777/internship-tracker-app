@@ -8,7 +8,6 @@ utop:
 
 test:
 	OCAMLRUNPARAM=b dune exec test/main.exe
-	OCAMLRUNPARAM=b dune exec test/contact_network.exe
 
 tracker:
 	OCAMLRUNPARAM=b dune exec bin/main.exe

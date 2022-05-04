@@ -282,7 +282,7 @@ let rec returning_user msg =
       ("The username you have entered does not exist.\n" ^ msg)
 
 let rec get_data () =
-  print_endline (new_or_return_msg ^ "To quit, enter 'quit'.");
+  print_endline (new_or_return_msg ^ " To quit, enter 'quit'.");
   match clean (read_line ()) with
   | [ "n" ] -> new_user username_msg
   | [ "r" ] -> returning_user "Please enter your username:"
